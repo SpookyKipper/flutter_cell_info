@@ -1,7 +1,7 @@
 name: flutter_cell_info
 description: Lightweight  library that is build over Telephony SDK. NetMonster core is extracted from NetMonster application and backports several Telephony features to older Android devices.
 version: 0.0.6
-homepage: https://github.com/devsumanrazz/flutter_cell_info
+homepage: https://github.com/sumanrajpathak/flutter_cell_info
 
 environment:
   sdk: '>=2.12.0 <4.0.0'
