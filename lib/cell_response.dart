@@ -1,4 +1,4 @@
-import 'models/CellData.dart';
+import 'models/cell_data.dart';
 import 'models/common/cell_type.dart';
 
 /// A class that represents the response from the getCellInfo method.
