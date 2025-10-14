@@ -1,4 +1,5 @@
 #import "CellInfoPlugin.h"
+#import "NetworkManager.h"
 
 @implementation CellInfoPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -12,7 +13,18 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"getPlatformVersion" isEqualToString:call.method]) {
     result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
-  } else {
+  } 
+  else if ([@"cell_info" isEqualToString:call.method]) {
+       [[NetworkManager sharedManager] requestDataWithCompletion:^(NSDictionary *data) {
+            result(data);
+        }];
+  } 
+  else if ([@"sim_info" isEqualToString:call.method]) {
+        // [[NetworkManager sharedManager] simsInfoWithCompletion:^(NSDictionary *data) {
+        //     result(data);
+        // }];
+  }
+  else {
     result(FlutterMethodNotImplemented);
   }
 }

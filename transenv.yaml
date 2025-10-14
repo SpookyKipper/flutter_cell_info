@@ -1,0 +1,31 @@
+
+## pattern to applies final variables in the generated json/dart Strings.
+## Enclose * in the pattern you need.
+## {*} = {{name}} becomes {name}
+## %* = {{name}} becomes %name
+## (*) = {{name}} becomes (name)
+## - Special case when you need * as prefix or suffix, use *? as splitter
+## ***?** = {{name}} becomes **name**
+#param_output_pattern: "{*}"
+
+arb:
+  ## Output dir for arb files
+  output_dir: lib/i18n
+
+## List of languages to translate your strings.
+locales:
+  - en
+  - es
+  - ar
+
+## Notion Database Configuration
+notion:
+# Notion Database Column Names
+    columns:
+        - key
+        - en
+        - ja
+    # Notion Database ID
+    database_id: "XXX"
+    # Notion Integration Token
+    integration_token: "secret_XXX"

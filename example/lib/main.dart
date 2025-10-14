@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cell_info/CellResponse.dart';
-import 'package:flutter_cell_info/SIMInfoResponse.dart';
+import 'package:flutter_cell_info/cell_response.dart';
 import 'package:flutter_cell_info/flutter_cell_info.dart';
 import 'package:flutter_cell_info/models/common/cell_type.dart';
+import 'package:flutter_cell_info/sim_info_response.dart';
 
 void main() {
   runApp(MyApp());
@@ -60,12 +61,12 @@ class _MyAppState extends State<MyApp> {
         currentDBM =
             "WCDMA dbm = ${currentCellInFirstChip.wcdma?.signalWCDMA?.dbm}";
 
-        print('currentDBM = ' + currentDBM!);
+        log('currentDBM = ' + currentDBM!);
       }
 
       String? simInfo = await CellInfo.getSIMInfo;
       final simJson = json.decode(simInfo!);
-      print("display name ${SIMInfoResponse.fromJson(simJson).simInfoList}");
+      log("display name ${SIMInfoResponse.fromJson(simJson).simInfoList}");
     } on PlatformException {
       _cellsResponse = null;
     }
