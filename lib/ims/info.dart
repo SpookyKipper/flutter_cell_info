@@ -3,7 +3,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 class ImsService {
   // Ensure this string matches the CHANNEL in your MainActivity.kt
-  static const MethodChannel _channel = MethodChannel('com.spookysrv.celldetect/telephony');
+  static const MethodChannel _channel =
+      MethodChannel('com.spookysrv.celldetect/telephony');
 
   /// Returns: 'VoLTE', 'VoNR', 'VoWiFi', '2G', '3G', or 'Unknown'
   /// Throws: PlatformException if the native call fails.
@@ -19,7 +20,14 @@ class ImsService {
 
     try {
       // 2. Invoke the native Android method
-      final String networkType = await _channel.invokeMethod('getVoiceNetworkType');
+      final String networkType =
+          await _channel.invokeMethod('getVoiceNetworkType');
+      if (networkType == "VoLTE" || networkType == "VoNR") {
+        final bool imsStatus = await _channel.invokeMethod('isImsRegistered');
+        if (imsStatus == false) {
+          return "No Voice or CSFB"; // IMS not registered
+        }
+      }
       return networkType;
     } on PlatformException catch (e) {
       // Log error or handle specific native exceptions
