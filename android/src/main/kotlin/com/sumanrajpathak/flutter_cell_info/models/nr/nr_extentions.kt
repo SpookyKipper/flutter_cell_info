@@ -2,7 +2,7 @@ package com.sumanrajpathak.flutter_cell_info.models.nr
 
 import com.sumanrajpathak.flutter_cell_info.models.CellData
 import com.sumanrajpathak.flutter_cell_info.models.common.Network
-import cz.mroczis.netmonster.core.model.cell.CellNr
+import cz.mroczis.netmonster.core.model.cell.CellNr 
 
 fun getNr(cell: CellNr, cellData: CellData): CellNR {
 
@@ -27,8 +27,8 @@ fun getNr(cell: CellNr, cellData: CellData): CellNR {
         cellNR.bandNR.channelNumber = it.channelNumber
         cellData.bandChannelNumber = it.channelNumber
 
-        cellNR.bandNR.number = it.number!!
-        cellData.bandNumber = it.number
+        cellNR.bandNR.number = it.number ?: 0
+        cellData.bandNumber = it.number ?: 0
 
         cellNR.bandNR.downlinkArfcn = it.downlinkArfcn
         cellData.bandDownlinkArfcn = it.downlinkArfcn
@@ -36,8 +36,8 @@ fun getNr(cell: CellNr, cellData: CellData): CellNR {
         cellNR.bandNR.downlinkFrequency = it.downlinkFrequency
         cellData.bandDownlinkFrequency = it.downlinkFrequency
 
-        cellNR.bandNR.name = it.name!!
-        cellData.bandName = it.name
+        cellNR.bandNR.name = it.name ?: ""
+        cellData.bandName = it.name ?: ""
     }
 
     cellNR.network =
@@ -55,29 +55,32 @@ fun getNr(cell: CellNr, cellData: CellData): CellNR {
 
     cellNR.signalNR = SignalNR()
     cell.signal.let {
-        cellNR.signalNR.csiRsrp = cell.signal.csiRsrp!!
-        cellData.csiRsrp = cell.signal.csiRsrp
+        // cellNR.signalNR.csiRsrp = cell.signal.csiRsrp ?: 0
+        // cellData.csiRsrp = cell.signal.csiRsrp ?: 0
 
-        cellNR.signalNR.csiRsrpAsu = cell.signal.csiRsrpAsu!!
-        cellData.csiRsrpAsu = cell.signal.csiRsrpAsu!!
+        // cellNR.signalNR.csiRsrpAsu = cell.signal.csiRsrpAsu ?: 0
+        // cellData.csiRsrpAsu = cell.signal.csiRsrpAsu ?: 0
 
-        cellNR.signalNR.csiRsrq = cell.signal.csiRsrq!!
-        cellData.csiRsrq = cell.signal.csiRsrq
+        // cellNR.signalNR.csiRsrq = cell.signal.csiRsrq ?: 0
+        // cellData.csiRsrq = cell.signal.csiRsrq ?: 0
 
-        cellNR.signalNR.csiSinr = cell.signal.csiSinr!!
-        cellData.csiSinr = cell.signal.csiSinr
+        // cellNR.signalNR.csiSinr = cell.signal.csiSinr ?: 0
+        // cellData.csiSinr = cell.signal.csiSinr ?: 0
 
-        cellNR.signalNR.ssRsrq = cell.signal.ssRsrp!!
-        cellData.ssRsrq = cell.signal.ssRsrp
+        cellNR.signalNR.ssRsrq = cell.signal.ssRsrq ?: -1
+        cellData.ssRsrq = cell.signal.ssRsrq ?: -1
 
-        cellNR.signalNR.dbm = cell.signal.dbm!!
-        cellData.dbm = cell.signal.dbm!!
+        cellNR.signalNR.ssSinr = cell.signal.ssSinr ?: 100
+        cellData.ssSinr = cell.signal.ssSinr ?: 100
 
-        cellNR.signalNR.ssRsrp = cell.signal.ssRsrp
-        cellData.ssRsrp = cell.signal.ssRsrp
+        cellNR.signalNR.dbm = cell.signal.dbm ?: -1
+        cellData.dbm = cell.signal.dbm ?: -1
 
-        cellNR.signalNR.ssRsrpAsu = cell.signal.ssRsrpAsu!!
-        cellData.ssRsrpAsu = cell.signal.ssRsrpAsu!!
+        cellNR.signalNR.ssRsrp = cell.signal.ssRsrp ?: -1
+        cellData.ssRsrp = cell.signal.ssRsrp ?: -1
+
+        cellNR.signalNR.ssRsrpAsu = cell.signal.ssRsrpAsu ?: -1
+        cellData.ssRsrpAsu = cell.signal.ssRsrpAsu ?: -1
 
     }
 
