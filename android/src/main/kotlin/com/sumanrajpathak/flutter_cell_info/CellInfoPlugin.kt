@@ -9,6 +9,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import com.spookysrv.celldetect.ImsInfoChannel
+import com.spookysrv.celldetect.RrcInfoChannel
 
 /** CellInfoPlugin */
 class CellInfoPlugin : FlutterPlugin, MethodCallHandler {
@@ -35,6 +36,7 @@ class CellInfoPlugin : FlutterPlugin, MethodCallHandler {
 
         // Attach IMS channel managed under com.spookysrv.celldetect
         ImsInfoChannel.attach(flutterPluginBinding)
+        RrcInfoChannel.attach(flutterPluginBinding)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
