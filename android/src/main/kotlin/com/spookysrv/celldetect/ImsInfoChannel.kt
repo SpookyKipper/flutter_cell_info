@@ -107,10 +107,11 @@ object ImsInfoChannel {
                     // Helper to parse the state once received
                     fun parseAndReply(serviceState: ServiceState) {
                         val ssString = serviceState.toString()
+                        println("ServiceState String: $ssString")
                         
                         // Check for explicit SUCCESS flags
                         val isRegistered = ssString.contains("imsRegState=1") ||       // Samsung/Qualcomm
-                                           ssString.contains("mIsImsRegistered=true")  // Pixel/AOSP
+                                           ssString.contains("mIsImsRegistered=true") || ssString.contains("mVoiceRegState=0(IN_SERVICE)")  // Pixel/AOSP
 
                         // Note: You can add the "Veto" logic here if you want to be extra strict
                         // e.g. if (ssString.contains("imsRegState=0")) isRegistered = false
