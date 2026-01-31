@@ -13,28 +13,6 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodChannel
 
 
-private fun isImsRegistered(ssString: String): Boolean {
-    // 1. Check for explicit "Registered" flags (Positive confirmation)
-    // "imsRegState=1" (Common on Samsung/Qualcomm)
-    // "mIsImsRegistered=true" (Common on Pixel/AOSP)
-    if (ssString.contains("imsRegState=1") || 
-        ssString.contains("mIsImsRegistered=true")) {
-        return true
-    }
-
-    // 2. Check for explicit "Not Registered" flags (Negative confirmation)
-    // If we see these, it is definitely NOT registered.
-    if (ssString.contains("imsRegState=0") || 
-        ssString.contains("mIsImsRegistered=false")) {
-        return false
-    }
-
-    // 3. Fallback / Tie-breaker
-    // If the string doesn't explicitly say "IMS", we assume FALSE.
-    // (It is safer to assume VoLTE is OFF if we can't find proof it is ON)
-    return false
-}
-
 
 /**
  * Centralized IMS voice network type channel setup.
