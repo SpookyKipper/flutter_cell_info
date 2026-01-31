@@ -3,7 +3,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 class ImsService {
   // Ensure this string matches the CHANNEL in your MainActivity.kt
-  static const MethodChannel _channel = MethodChannel('com.spookysrv.imsinfo/telephony');
+  static const MethodChannel _channel = MethodChannel('com.spookysrv.celldetect/telephony');
 
   /// Returns: 'VoLTE', 'VoNR', 'VoWiFi', '2G', '3G', or 'Unknown'
   /// Throws: PlatformException if the native call fails.

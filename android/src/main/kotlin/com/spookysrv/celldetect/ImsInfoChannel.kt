@@ -1,4 +1,4 @@
-package com.spookysrv.imsinfo
+package com.spookysrv.celldetect
 
 import android.Manifest
 import android.content.Context
@@ -11,10 +11,10 @@ import io.flutter.plugin.common.MethodChannel
 
 /**
  * Centralized IMS voice network type channel setup.
- * Keeps implementation isolated under `com.spookysrv.imsinfo`.
+ * Keeps implementation isolated under `com.spookysrv.celldetect`.
  */
 object ImsInfoChannel {
-    private const val CHANNEL_NAME = "com.spookysrv.imsinfo/telephony"
+    private const val CHANNEL_NAME = "com.spookysrv.celldetect/telephony"
 
     private var channel: MethodChannel? = null
     private var appContext: Context? = null
