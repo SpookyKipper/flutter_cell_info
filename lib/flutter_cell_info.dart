@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+export 'ims/info.dart';
 
 /// A class that provides information about the cell.
 class CellInfo {
