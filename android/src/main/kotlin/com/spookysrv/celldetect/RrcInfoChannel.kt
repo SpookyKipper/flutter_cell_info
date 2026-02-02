@@ -51,10 +51,10 @@ object RrcInfoChannel {
                     val state = tm.dataState
                     
                     var rrcStatus = when (state) {
-                        TelephonyManager.DATA_DISCONNECTED -> "RRC_IDLE_OR_DISCONNECTED"
-                        TelephonyManager.DATA_CONNECTING -> "RRC_CONNECTING"
-                        TelephonyManager.DATA_CONNECTED -> "RRC_CONNECTED"
-                        TelephonyManager.DATA_SUSPENDED -> "SUSPENDED"
+                        TelephonyManager.DATA_DISCONNECTED -> "DATA_DISCONNECTED"
+                        TelephonyManager.DATA_CONNECTING -> "DATA_CONNECTING"
+                        TelephonyManager.DATA_CONNECTED -> "DATA_CONNECTED"
+                        TelephonyManager.DATA_SUSPENDED -> "DATA_SUSPENDED"
                         else -> "UNKNOWN"
                     }
 
