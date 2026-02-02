@@ -10,6 +10,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import com.spookysrv.celldetect.ImsInfoChannel
 import com.spookysrv.celldetect.RrcInfoChannel
+import com.spookysrv.celldetect.ImsInfoChannelDebug
+import com.spookysrv.celldetect.ServiceStateChannel
 
 /** CellInfoPlugin */
 class CellInfoPlugin : FlutterPlugin, MethodCallHandler {
@@ -36,7 +38,10 @@ class CellInfoPlugin : FlutterPlugin, MethodCallHandler {
 
         // Attach IMS channel managed under com.spookysrv.celldetect
         ImsInfoChannel.attach(flutterPluginBinding)
+        ImsInfoChannelDebug.attach(flutterPluginBinding)
         RrcInfoChannel.attach(flutterPluginBinding)
+        ServiceStateChannel.attach(flutterPluginBinding)
+        // CellInfoChannel.attach(flutterPluginBinding)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
