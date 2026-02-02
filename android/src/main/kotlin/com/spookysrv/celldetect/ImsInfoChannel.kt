@@ -63,12 +63,12 @@ object ImsInfoChannel {
                         TelephonyManager.NETWORK_TYPE_LTE -> "VoLTE"
                         TelephonyManager.NETWORK_TYPE_NR -> "VoNR"
                         TelephonyManager.NETWORK_TYPE_IWLAN -> "VoWiFi"
-                        TelephonyManager.NETWORK_TYPE_GSM,
-                        TelephonyManager.NETWORK_TYPE_GPRS,
+                        TelephonyManager.NETWORK_TYPE_GSM -> "GSM"
+                        TelephonyManager.NETWORK_TYPE_GPRS -> "GPRS"
                         TelephonyManager.NETWORK_TYPE_EDGE -> "2G"
-                        TelephonyManager.NETWORK_TYPE_UMTS,
-                        TelephonyManager.NETWORK_TYPE_HSDPA,
-                        TelephonyManager.NETWORK_TYPE_HSPA,
+                        TelephonyManager.NETWORK_TYPE_UMTS -> "UMTS"
+                        TelephonyManager.NETWORK_TYPE_HSDPA -> "HSDPA"
+                        TelephonyManager.NETWORK_TYPE_HSPA -> "HSPA"
                         TelephonyManager.NETWORK_TYPE_HSPAP -> "3G"
                         else -> "Unknown/Other"
                     }
@@ -107,7 +107,7 @@ object ImsInfoChannel {
                     // Helper to parse the state once received
                     fun parseAndReply(serviceState: ServiceState) {
                         val ssString = serviceState.toString()
-                        println("ServiceState String: $ssString")
+                        // println("ServiceState String: $ssString")
                         
                         // Check for explicit SUCCESS flags
                         val isRegistered = ssString.contains("imsRegState=1") ||       // Samsung/Qualcomm
