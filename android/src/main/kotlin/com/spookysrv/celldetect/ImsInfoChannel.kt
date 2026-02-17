@@ -81,7 +81,7 @@ object ImsInfoChannel {
 
                     result.success(voiceType)
                 }
-                "isImsRegistered" -> {
+                "isImsRegistered" -> { // included in all
 
                     val ctx = appContext
                     if (ctx == null) {
@@ -110,7 +110,7 @@ object ImsInfoChannel {
                         // println("ServiceState String: $ssString")
                         
                         // Check for explicit SUCCESS flags
-                        val isRegistered = ssString.contains("imsRegState=1") ||       // Samsung/Qualcomm
+                        val isRegistered = ssString.contains("imsRegState=1") ||     
                                            ssString.contains("mIsImsRegistered=true") || ssString.contains("mVoiceRegState=0(IN_SERVICE)")  // Pixel/AOSP
 
                         // Note: You can add the "Veto" logic here if you want to be extra strict
