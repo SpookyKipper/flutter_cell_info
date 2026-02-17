@@ -22,12 +22,12 @@ class ImsService {
       // 2. Invoke the native Android method
       final String networkType =
           await _channel.invokeMethod('getVoiceNetworkType');
-      if (networkType == "VoLTE" || networkType == "VoNR") {
-        final bool imsStatus = await _channel.invokeMethod('isImsRegistered');
-        if (imsStatus == false) {
-          return "No Voice or CSFB"; // IMS not registered
-        }
-      }
+      // if (networkType == "VoLTE" || networkType == "VoNR") {
+      //   final bool imsStatus = await _channel.invokeMethod('isImsRegistered');
+      //   if (imsStatus == false) {
+      //     return "No Voice or CSFB"; // IMS not registered
+      //   }
+      // }
       return networkType;
     } on PlatformException catch (e) {
       // Log error or handle specific native exceptions
