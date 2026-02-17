@@ -1,166 +1,146 @@
-// package com.spookysrv.celldetect
+package com.spookysrv.celldetect
 
-// import android.content.Context
-// import android.os.Build
-// import android.telephony.TelephonyCallback
-// import android.telephony.TelephonyDisplayInfo
-// import android.telephony.TelephonyManager
-// import android.telephony.PhysicalChannelConfig
-// import androidx.annotation.RequiresApi
-// import io.flutter.embedding.android.FlutterActivity
-// import io.flutter.embedding.engine.FlutterEngine
-// import io.flutter.plugin.common.MethodChannel
-// import io.flutter.embedding.engine.plugins.FlutterPlugin
-// import androidx.core.content.ContextCompat
-// import android.Manifest
-// import android.content.pm.PackageManager
+import android.content.Context
+import android.os.Build
+import android.telephony.TelephonyCallback
+import android.telephony.TelephonyDisplayInfo
+import android.telephony.TelephonyManager
+import android.telephony.PhysicalChannelConfig
+import androidx.annotation.RequiresApi
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import androidx.core.content.ContextCompat
+import android.Manifest
+import android.content.pm.PackageManager
+import android.telephony.PhoneStateListener
 
-// /**
-//  * rrc
-//  * Keeps implementation isolated under `com.spookysrv.celldetect`.
-//  */
-// object CellInfoChannel {
-//     private const val CHANNEL_NAME = "com.spookysrv.celldetect/cellinfo"
 
-//     private var channel: MethodChannel? = null
-//     private var appContext: Context? = null
+/**
+ * rrc
+ * Keeps implementation isolated under `com.spookysrv.celldetect`.
+ */
+object CellInfoChannel {
+    private const val CHANNEL_NAME = "com.spookysrv.celldetect/cellinfo"
 
-//     fun attach(binding: FlutterPlugin.FlutterPluginBinding) {
-//         appContext = binding.applicationContext
-//         channel = MethodChannel(binding.binaryMessenger, CHANNEL_NAME)
-//         channel?.setMethodCallHandler { call, result ->
-//             when (call.method) {
-//                 "getDetailedNetworkType" -> {
-//                     val ctx = appContext
-//                                         val telephonyManager = ctx!!.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    private var channel: MethodChannel? = null
+    private var appContext: Context? = null
 
-//                     try {
-//         // 1. Create a variable to track if we've already replied (to prevent double replies)
-//         var hasReplied = false
+    // 1. Variable to cache the latest value
+    private var latestOverrideType: Int = 0 
+    
+    // 2. Track if we are currently listening to avoid duplicate registrations
+    private var isListening = false
+    
+    // 3. Hold references to listeners to prevent garbage collection issues
+    private var telephonyCallback: Any? = null
 
-//         // 2. Create the callback that implements BOTH listeners
-//         val callback = object : TelephonyCallback(), 
-//             TelephonyCallback.PhysicalChannelConfigListener, 
-//             TelephonyCallback.DisplayInfoListener {
-            
-//             // Store the display info when it arrives
-//             var currentDisplayInfo: TelephonyDisplayInfo? = null
+    fun attach(binding: FlutterPlugin.FlutterPluginBinding) {
+        appContext = binding.applicationContext
+        channel = MethodChannel(binding.binaryMessenger, CHANNEL_NAME)
+        channel?.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getOverrideNetworkType" -> {
+                    val context = appContext
+                    if (context == null) {
+                        result.error("NO_CONTEXT", "Context is null", null)
+                        return@setMethodCallHandler
+                    }
 
-//             override fun onDisplayInfoChanged(telephonyDisplayInfo: TelephonyDisplayInfo) {
-//                 currentDisplayInfo = telephonyDisplayInfo
-//                 // We don't reply here, we wait for the physical config to trigger the logic
-//             }
-
-//             override fun onPhysicalChannelConfigChanged(configs: List<PhysicalChannelConfig>) {
-//                 if (hasReplied) return // Safety check
-
-//                 // --- STEP 1: Count Physical Resources ---
-//                 var lteCcCount = 0
-//                 var nrCcCount = 0
-
-//                 for (config in configs) {
-//                     when (config.networkType) {
-//                         TelephonyManager.NETWORK_TYPE_LTE -> lteCcCount++
-//                         TelephonyManager.NETWORK_TYPE_NR -> nrCcCount++
-//                     }
-//                 }
-
-//                 // --- STEP 2: Use the cached DisplayInfo (or 0 if not arrived yet) ---
-//                 // Note: Android usually sends onDisplayInfoChanged immediately before this, 
-//                 // but if it's null, we assume no override.
-//                 val override = currentDisplayInfo?.overrideNetworkType ?: 0
-                
-//                 val isNrAvailable = override == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_NSA ||
-//                                     override == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_ADVANCED
-
-//                 // --- STEP 3: Get Base Radio Technology ---
-//                                     val telephonyManager = ctx.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-
-//                 val baseNetworkType = telephonyManager?.dataNetworkType ?: TelephonyManager.NETWORK_TYPE_UNKNOWN
-                
-//                 // --- STEP 4: Decision Tree ---
-//                 val status = when {
-//                     // === 5G SA ===
-//                     baseNetworkType == TelephonyManager.NETWORK_TYPE_NR || (nrCcCount > 0 && lteCcCount == 0) -> {
-//                         if (nrCcCount > 1) "NR-SA-CA" else "NR-SA"
-//                     }
-
-//                     // === 5G NSA ===
-//                     nrCcCount > 0 && lteCcCount > 0 -> {
-//                         if (lteCcCount > 1 || nrCcCount > 1) "NR-NSA-CA" else "NR-NSA"
-//                     }
-
-//                     // === LTE / LTE-A ===
-//                     baseNetworkType == TelephonyManager.NETWORK_TYPE_LTE || lteCcCount > 0 -> {
-//                         if (isNrAvailable) {
-//                             if (lteCcCount > 1) "LTE-A-NRANCHOR" else "LTE-NRANCHOR"
-//                         } else {
-//                             if (lteCcCount > 1) "LTE-A" else "LTE"
-//                         }
-//                     }
-
-//                     // === Legacy ===
-//                     baseNetworkType == TelephonyManager.NETWORK_TYPE_HSPAP ||
-//                     baseNetworkType == TelephonyManager.NETWORK_TYPE_HSPA ||
-//                     baseNetworkType == TelephonyManager.NETWORK_TYPE_UMTS -> "3G"
+                    // Permission Check
+                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                         result.error("PERMISSION_DENIED", "READ_PHONE_STATE permission denied", null)
+                         return@setMethodCallHandler
+                    }
                     
-//                     baseNetworkType == TelephonyManager.NETWORK_TYPE_EDGE ||
-//                     baseNetworkType == TelephonyManager.NETWORK_TYPE_GPRS -> "2G"
+                    startListening(binding)
+                    result.success(getOverrideTypeName(latestOverrideType))
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
 
-//                     else -> "Unknown"
-//                 }
+    fun detach() {
+        channel?.setMethodCallHandler(null)
+        channel = null
+        cleanup(appContext)
+        appContext = null
+    }
 
-//                 // Send Result and Unregister
-//                 hasReplied = true
-//                 result.success(status)
-//                 telephonyManager?.unregisterTelephonyCallback(this)
-//             }
-//         }
 
-//         val mainExecutor = ctx.mainExecutor
-//         // 3. Register the callback
-//         telephonyManager?.registerTelephonyCallback(mainExecutor, callback)
+    // Helper to convert Int -> String
+    private fun getOverrideTypeName(type: Int): String {
+        return when (type) {
+            TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NONE -> "NONE"
+            TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_LTE_CA -> "LTE_CA"
+            TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_LTE_ADVANCED_PRO -> "LTE_ADVANCED_PRO"
+            TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_ADVANCED -> "NR_ADVANCED"
+            TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_NSA -> "NR_NSA"
+            // API 31+ constant, check for existence or use raw value 5
+            5 -> "NR_ADVANCED" 
+            else -> "UNKNOWN"
+        }
+    }
 
-//     } catch (e: SecurityException) {
-//         result.error("PERMISSION", e.message, null)
-//     } catch (e: Exception) {
-//         result.error("ERROR", e.message, null)
-//     }
-//                 }
+    private fun startListening(binding: FlutterPlugin.FlutterPluginBinding) {
+        appContext = binding.applicationContext
+val telephonyManager = appContext!!.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        // val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
-//                 // ---------------------------------------------------------
-//                 // METHOD 2: Get Raw CA Combos (Visible on Qualcomm)
-//                 // ---------------------------------------------------------
-//                 // "getPhysicalCells" -> {
-//                 //     netMonster.getPhysicalChannelConfiguration(subId) { configList ->
-//                 //         val processedData = configList.map { config ->
-//                 //             val statusStr = when(config.connectionStatus) {
-//                 //                 PhysicalChannelConfig.ConnectionStatus.PRIMARY -> "Primary"
-//                 //                 PhysicalChannelConfig.ConnectionStatus.SECONDARY -> "Secondary"
-//                 //                 else -> "Unknown"
-//                 //             }
-                            
-//                 //             mapOf(
-//                 //                 "band" to (config.band?.name ?: "Unknown"), // e.g., "2100", "700"
-//                 //                 "number" to (config.band?.number ?: 0),     // e.g., 1, 3, 78
-//                 //                 "bandwidth" to config.bandwidth,            // kHz
-//                 //                 "pci" to (config.pci ?: -1),
-//                 //                 "status" to statusStr,
-//                 //                 "type" to if (config.band is BandNr) "NR" else "LTE"
-//                 //             )
-//                 //         }
-//                 //          result.success(processedData) 
-//                 //     }
-//                 // }
-                
-//                 else -> result.notImplemented()
-//             }
-//         }
-//     }
+        // Permission Check
+        val hasPermission = ContextCompat.checkSelfPermission(
+                        appContext!!,
+                        Manifest.permission.READ_PHONE_STATE
+                    ) == PackageManager.PERMISSION_GRANTED
 
-//     fun detach() {
-//         channel?.setMethodCallHandler(null)
-//         channel = null
-//         appContext = null
-//     }
-// }
+                    if (!hasPermission) {
+                        return
+                    }
+
+        // Avoid registering twice
+        if (isListening) return 
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // API 31+ (Android 12)
+            val callback = object : TelephonyCallback(), TelephonyCallback.DisplayInfoListener {
+                override fun onDisplayInfoChanged(telephonyDisplayInfo: TelephonyDisplayInfo) {
+                    latestOverrideType = telephonyDisplayInfo.overrideNetworkType
+                }
+            }
+            val mainExecutor = appContext!!.mainExecutor
+            telephonyManager.registerTelephonyCallback(mainExecutor, callback)
+            telephonyCallback = callback
+            isListening = true
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R) {
+            // // API 30 (Android 11)
+            // val listener = object : PhoneStateListener() {
+            //         var latestOverrideType = TelephonyDisplayInfo..
+            //     }
+            // }
+            // telephonyManager.listen(listener, PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED)
+            // telephonyCallback = listener
+            // isListening = true
+            // lastOverrideType = 0 // No override info available (ANDROID 12+ only)
+        }
+    }
+
+    fun cleanup(appContext: Context?) {
+        // super.onDestroy()
+        // Cleanup when the app closes
+        val telephonyManager = appContext!!.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            (telephonyCallback as? TelephonyCallback)?.let {
+                telephonyManager.unregisterTelephonyCallback(it)
+            }
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R) {
+            (telephonyCallback as? PhoneStateListener)?.let {
+                telephonyManager.listen(it, PhoneStateListener.LISTEN_NONE)
+            }
+        }
+    }
+
+
+
+}
