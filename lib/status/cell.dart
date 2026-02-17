@@ -40,4 +40,14 @@ class CellService {
       return [];
     }
   }
+
+  static Future<String> getOverrideNetworkType() async {
+    try {
+      final String result =
+          await _channel.invokeMethod('getOverrideNetworkType');
+      return result;
+    } on PlatformException catch (e) {
+      print("CA Error: ${e.message}");
+      return "ERROR";}
+  }
 }
