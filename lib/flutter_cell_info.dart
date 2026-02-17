@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 export 'ims/info.dart';
 export 'status/rrc.dart';
 export 'status/cell.dart';
+export 'status/serviceState.dart';
 
 /// A class that provides information about the cell.
 class CellInfo {
