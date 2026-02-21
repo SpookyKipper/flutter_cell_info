@@ -34,7 +34,8 @@ class ServiceStateService {
     }
   }
 
-  static Future<List<double>> getBandwidths() async { // included in all
+  static Future<List<double>> getBandwidths() async {
+    // included in all
     // 1. Check/Request Permissions explicitly before calling native code
     final status = await Permission.phone.status;
     if (!status.isGranted) {
@@ -59,8 +60,10 @@ class ServiceStateService {
 
         if (content != null && content.isNotEmpty) {
           // 3. 以逗號分割並轉換為整數列表
-          bandwidths =
-              content.split(',').map((e) => int.parse(e.trim())/1000).toList();
+          bandwidths = content
+              .split(',')
+              .map((e) => int.parse(e.trim()) / 1000)
+              .toList();
         }
       }
 
@@ -72,8 +75,13 @@ class ServiceStateService {
     }
   }
 
+  static _getSerivceStateVal(String key, String serviceState) {
+    RegExp regExp = RegExp("$key=(.*?)[,}]");
+    Match? match = regExp.firstMatch(serviceState);
+    return match?.group(1)?.trim() ?? "Unknown";
+  }
 
-  static Future<Map> getAllInfoFromSerivceState() async { 
+  static Future<Map> getAllInfoFromSerivceState() async {
     // 1. Check/Request Permissions explicitly before calling native code
     final status = await Permission.phone.status;
     if (!status.isGranted) {
@@ -98,38 +106,61 @@ class ServiceStateService {
 
         if (content != null && content.isNotEmpty) {
           // 3. 以逗號分割並轉換為整數列表
-          bandwidths =
-              content.split(',').map((e) => int.parse(e.trim())/1000).toList();
+          bandwidths = content
+              .split(',')
+              .map((e) => int.parse(e.trim()) / 1000)
+              .toList();
         }
       }
 
       bool usingCa = serviceState.contains("isUsingCarrierAggregation=true");
       bool nrAvailable = serviceState.contains("isNrAvailable = true");
       bool endcAvailable = serviceState.contains("isEnDcAvailable = true");
-      bool imsRegistered = serviceState.contains("imsRegState=1") || serviceState.contains("mIsImsRegistered=true") || serviceState.contains("mVoiceRegState=0(IN_SERVICE)");
+      bool imsRegistered = serviceState.contains("imsRegState=1") ||
+          serviceState.contains("mIsImsRegistered=true") ||
+          serviceState.contains("mVoiceRegState=0(IN_SERVICE)");
 
-      RegExp regExpCarrierName = RegExp(r"mOperatorAlphaLongRaw=(.*?), ");
-      Match? matchCarrierName = regExpCarrierName.firstMatch(serviceState);
-      String carrierName = matchCarrierName!.group(1)?.trim() ?? "Unknown";
-
-
-      RegExp regExpMvnoName = RegExp(r"mOperatorAlphaLong=(.*?), ");
-      Match? matchMvnoName = regExpMvnoName.firstMatch(serviceState);
-      String mvnoName = matchMvnoName!.group(1)?.trim() ?? "Unknown";
+      String carrierName =
+          _getSerivceStateVal("mOperatorAlphaLongRaw", serviceState);
+      String mvnoName = _getSerivceStateVal("mOperatorAlphaLong", serviceState);
       if (mvnoName == carrierName) {
         mvnoName = "";
       }
 
-     
+      String dataRadioTech =
+          _getSerivceStateVal("getRilDataRadioTechnology", serviceState);
+      String voiceRadioTech =
+          _getSerivceStateVal("getRilVoiceRadioTechnology", serviceState);
+
+      String voiceTechnology = "Unknown";
+      if ((dataRadioTech == "18(IWLAN)" &&
+              (voiceRadioTech == "20(NR_SA)" || voiceRadioTech == "14(LTE)")) ||
+          voiceRadioTech == "18(IWLAN)") {
+        voiceTechnology = "VoWiFi";
+      } else if (voiceRadioTech == "20(NR_SA)") {
+        voiceTechnology = "VoNR";
+        if (imsRegistered == false) {
+          voiceTechnology == "No Voice or VoLTE or CSFB";
+        }
+      } else if (voiceRadioTech == "14(LTE)") {
+        voiceTechnology = "VoLTE";
+        if (imsRegistered == false) {
+          voiceTechnology == "No Voice or CSFB";
+        }
+      } else if (voiceRadioTech != "Unknown") {
+        voiceTechnology = voiceRadioTech;
+      }
 
       return {
         "bandwidths": bandwidths,
         "usingCa": usingCa,
         "lteAnchor": nrAvailable,
-        "nrNsa":  endcAvailable && nrAvailable, // connected to 5G in NSA mode (EN-DC) requires NR available and EN-DC available
+        "nrNsa": endcAvailable &&
+            nrAvailable, // connected to 5G in NSA mode (EN-DC) requires NR available and EN-DC available
         "imsRegistered": imsRegistered,
         "carrierName": carrierName,
         "mvnoName": mvnoName,
+        "voiceTechnology": voiceTechnology,
       };
     } on PlatformException catch (e) {
       // Log error or handle specific native exceptions

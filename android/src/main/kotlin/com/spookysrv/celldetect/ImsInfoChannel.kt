@@ -29,7 +29,7 @@ object ImsInfoChannel {
         channel = MethodChannel(binding.binaryMessenger, CHANNEL_NAME)
         channel?.setMethodCallHandler { call, result ->
             when (call.method) {
-                "getVoiceNetworkType" -> {
+                "getVoiceNetworkType" -> { // included in all
                     val ctx = appContext
                     if (ctx == null) {
                         result.error("NO_CONTEXT", "Context not available", null)
@@ -70,7 +70,7 @@ object ImsInfoChannel {
                         TelephonyManager.NETWORK_TYPE_HSDPA -> "HSDPA"
                         TelephonyManager.NETWORK_TYPE_HSPA -> "HSPA"
                         TelephonyManager.NETWORK_TYPE_HSPAP -> "3G"
-                        else -> "Unknown/Other"
+                        else -> "Not Connected to Voice Services"
                     }
 
                     // Fallback: if data is IWLAN, treat voice as VoWiFi.
