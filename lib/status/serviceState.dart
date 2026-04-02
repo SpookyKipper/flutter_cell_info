@@ -127,6 +127,20 @@ class ServiceStateService {
         mvnoName = "";
       }
 
+      bool isRoaming = serviceState.contains(
+                  "mIsDataRoamingFromRegistration=true") || // modern androids
+              serviceState
+                  .contains("registrationState=ROAMING") || // modern androids
+              serviceState.contains(
+                  "networkRegistrationState=ROAMING") || // modern androids
+              serviceState
+                  .contains("roamingType=INTERNATIONAL") || // modern androids
+              serviceState.contains(
+                  "IsDataRoamingFromRegistration=true") || // older androids
+              serviceState
+                  .contains("data International Roaming") // older androids
+          ;
+
       String dataRadioTech =
           _getSerivceStateVal("getRilDataRadioTechnology", serviceState);
       String voiceRadioTech =
@@ -161,6 +175,7 @@ class ServiceStateService {
         "carrierName": carrierName,
         "mvnoName": mvnoName,
         "voiceTechnology": voiceTechnology,
+        "isRoaming": isRoaming,
       };
     } on PlatformException catch (e) {
       // Log error or handle specific native exceptions
